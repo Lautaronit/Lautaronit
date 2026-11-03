@@ -1,0 +1,189 @@
+// =============================================================================
+// On It — Esquema de base de datos (Prisma)
+// -----------------------------------------------------------------------------
+// Prisma es la "fuente de verdad" del modelo: a partir de este archivo se
+// generan tanto el cliente tipado (TypeScript) como las migraciones SQL.
+//
+// En desarrollo usamos SQLite (cero instalación). Para pasar a producción con
+// PostgreSQL solo se cambia `provider = "postgresql"` y la DATABASE_URL — el
+// modelo y las relaciones son idénticos.
+//
+// Convención de dinero: montos en CENTAVOS (Int), nunca en decimales.
+// =============================================================================
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -----------------------------------------------------------------------------
+// Usuario: la persona que usa On It.
+// -----------------------------------------------------------------------------
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique // login + evita duplicados; crea índice único
+  passwordHash String // nunca guardamos la contraseña en texto plano
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Billetera: saldo "cacheado" en centavos. La fuente de verdad es el ledger
+  // (WalletTransaction); este campo se mantiene en sincronía dentro de la misma
+  // transacción para poder leer el saldo de un solo golpe.
+  walletBalanceCents Int @default(0)
+
+  // Preferencias del usuario (Settings > Preferences).
+  usualOrder   String? // "lo de siempre", para repetir rápido
+  dietaryNotes String? // restricciones / notas (ej. "sin gluten")
+  notifyOnOrder Boolean @default(true) // avisos de pedidos (hoy cosmético)
+
+  addresses    Address[]
+  orders       Order[]
+  schedules    ScheduledOrder[]
+  payments     PaymentMethod[]
+  transactions WalletTransaction[]
+}
+
+// -----------------------------------------------------------------------------
+// Dirección de entrega. Un usuario puede tener varias (casa, trabajo, etc.).
+// Se guarda aparte del pedido para no repetir la dirección en cada compra.
+// -----------------------------------------------------------------------------
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String? // "Casa", "Trabajo"...
+  street    String
+  city      String
+  notes     String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  orders Order[]
+
+  // Buscamos direcciones por usuario constantemente -> índice.
+  @@index([userId])
+}
+
+// -----------------------------------------------------------------------------
+// Pedido: una compra concreta ejecutada (o intentada) contra un comercio.
+// -----------------------------------------------------------------------------
+model Order {
+  id         String @id @default(cuid())
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  merchantId String // id del comercio en el registro de conectores
+  status     String // pending | confirmed | rejected | needs_review
+  totalCents Int    @default(0)
+  currency   String @default("USD")
+
+  externalOrderId String? // id del pedido en el sistema del comercio
+  rawMessage      String? // lo que escribió el usuario: "quiero 2 big mac..."
+
+  addressId String?
+  address   Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
+
+  // Si el pedido nació de una programación recurrente, lo vinculamos.
+  scheduleId String?
+  schedule   ScheduledOrder? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Índices pensados para las consultas reales:
+  @@index([userId, createdAt]) // "mis pedidos, más nuevos primero"
+  @@index([status]) // paneles / reintentos por estado
+  @@index([merchantId]) // métricas por comercio
+  @@index([scheduleId]) // pedidos de una programación
+}
+
+// -----------------------------------------------------------------------------
+// Ítem de un pedido: una línea (producto + cantidad + precio al momento).
+// Guardamos nombre y precio como "foto" del momento de la compra, porque el
+// catálogo del comercio puede cambiar después.
+// -----------------------------------------------------------------------------
+model OrderItem {
+  id             String @id @default(cuid())
+  orderId        String
+  order          Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sku            String
+  name           String
+  quantity       Int
+  unitPriceCents Int
+
+  // Casi siempre pedimos los ítems "de este pedido" -> índice por orderId.
+  @@index([orderId])
+  @@index([sku]) // análisis: "¿qué productos se piden más?"
+}
+
+// -----------------------------------------------------------------------------
+// Pedido programado: la recurrencia ("todos los lunes a las 9 la compra").
+// El scheduler lee esta tabla, y cada ejecución crea un Order vinculado.
+// -----------------------------------------------------------------------------
+model ScheduledOrder {
+  id          String  @id @default(cuid())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchantId  String
+  cron        String // expresión cron, ej. "0 9 * * 1" = lunes 09:00
+  message     String // el pedido en lenguaje natural que se repite
+  budgetCents Int? // tope opcional ("compra variada con este presupuesto")
+  active      Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lastRunAt DateTime?
+
+  orders Order[]
+
+  @@index([userId])
+  @@index([active]) // el scheduler barre solo las activas
+}
+
+// -----------------------------------------------------------------------------
+// Medio de pago guardado. Modelo "Stripe-ready": NUNCA guardamos el número de
+// tarjeta completo, solo lo que es seguro mostrar (marca + últimos 4 + venc.) y
+// una referencia opaca del proveedor. Hoy el proveedor es simulado; mañana ese
+// `providerRef` será el id real de Stripe (pm_...).
+// -----------------------------------------------------------------------------
+model PaymentMethod {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brand       String // "Visa", "Mastercard"...
+  last4       String // solo los últimos 4 dígitos
+  expMonth    Int
+  expYear     Int
+  isDefault   Boolean  @default(false)
+  providerRef String? // id en el proveedor de pagos (Stripe: pm_...)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+// -----------------------------------------------------------------------------
+// Ledger de la billetera: cada movimiento de saldo es una fila inmutable. El
+// saldo del usuario es la suma de estos movimientos (y lo cacheamos en
+// User.walletBalanceCents). `amountCents` lleva signo: + carga, - gasto.
+// -----------------------------------------------------------------------------
+model WalletTransaction {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type             String // "topup" | "order_debit" | "refund"
+  amountCents      Int // con signo: + entra, - sale
+  balanceAfterCents Int // saldo resultante (foto, para mostrar el historial)
+  description      String
+  orderId          String? // si el movimiento es el cobro de un pedido
+  paymentMethodId  String? // si fue una carga con tarjeta
+  providerRef      String? // referencia del proveedor de pagos (Stripe)
+  createdAt        DateTime @default(now())
+
+  @@index([userId, createdAt]) // "mis movimientos, más nuevos primero"
+}

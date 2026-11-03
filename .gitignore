@@ -1,0 +1,31 @@
+# Dependencias
+node_modules/
+
+# Builds
+dist/
+build/
+*.tsbuildinfo
+
+# Variables de entorno (¡nunca commitear secretos!)
+.env
+.env.local
+*.env
+
+# Base de datos local
+*.sqlite
+*.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Prisma
+apps/backend/prisma/migrations/dev.db*

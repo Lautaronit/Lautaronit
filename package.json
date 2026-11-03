@@ -1,0 +1,29 @@
+{
+  "name": "on-it",
+  "version": "0.1.0",
+  "private": true,
+  "description": "On It — asistente de IA que hace pedidos a comercios de forma automática.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @on-it/backend",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "tsc --build --verbose",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "prisma@6.19.3": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true
+  },
+  "devDependencies": {
+    "vitest": "^5.1.0"
+  }
+}
