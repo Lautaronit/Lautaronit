@@ -1,9 +1,9 @@
 /**
  * LoginScreen.tsx
  * -----------------------------------------------------------------------------
- * Pantalla de inicio de sesión. Mantiene la identidad: fondo crema, wordmark
- * "On It" en cursiva, y el botón principal en verde (el naranja se reserva para
- * la flecha de enviar de la home).
+ * Pantalla de autenticación con dos modos: iniciar sesión y crear cuenta
+ * (Sign up). Mantiene la identidad: fondo crema, wordmark "On It" en cursiva, y
+ * el botón principal en verde (el naranja se reserva para la flecha de la home).
  */
 
 import { useState } from "react";
@@ -17,7 +17,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { login } from "../api";
+import { login, register } from "../api";
 import { saveToken } from "../storage";
 import { colors, fonts, radius, spacing } from "../theme";
 
@@ -25,22 +25,48 @@ interface Props {
   onLoggedIn: (token: string) => void;
 }
 
+type Mode = "login" | "signup";
+
 export default function LoginScreen({ onLoggedIn }: Props) {
+  const [mode, setMode] = useState<Mode>("login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("demo@onit.app");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin() {
+  const isSignup = mode === "signup";
+
+  function switchTo(next: Mode) {
+    setMode(next);
+    setError(null);
+    setPassword("");
+    // Al pasar a registro, limpiamos el email demo; al volver, lo reponemos.
+    setEmail(next === "signup" ? "" : "demo@onit.app");
+    setName("");
+  }
+
+  async function handleSubmit() {
     if (loading) return;
+    const mail = email.trim();
+    if (!mail || !password) {
+      setError("Enter your email and password.");
+      return;
+    }
+    if (isSignup && password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
-      const res = await login(email.trim(), password);
+      const res = isSignup
+        ? await register({ email: mail, password, name: name.trim() || undefined })
+        : await login(mail, password);
       await saveToken(res.token);
       onLoggedIn(res.token);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo iniciar sesión.");
+      setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -54,11 +80,22 @@ export default function LoginScreen({ onLoggedIn }: Props) {
       <View style={styles.hero}>
         <Text style={styles.wordmark}>On It</Text>
         <Text style={styles.slogan}>
-          Ask for anything.{"\n"}We're on it.
+          {isSignup ? "Create your account." : "Ask for anything.\nWe're on it."}
         </Text>
       </View>
 
       <View style={styles.form}>
+        {isSignup ? (
+          <TextInput
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+            placeholder="Name (optional)"
+            placeholderTextColor={colors.placeholder}
+            autoCapitalize="words"
+            accessibilityLabel="Name"
+          />
+        ) : null}
         <TextInput
           style={styles.input}
           value={email}
@@ -74,27 +111,40 @@ export default function LoginScreen({ onLoggedIn }: Props) {
           style={styles.input}
           value={password}
           onChangeText={setPassword}
-          placeholder="Password"
+          placeholder={isSignup ? "Password (min. 8 characters)" : "Password"}
           placeholderTextColor={colors.placeholder}
           secureTextEntry
           accessibilityLabel="Password"
-          onSubmitEditing={handleLogin}
+          onSubmitEditing={handleSubmit}
         />
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-          onPress={handleLogin}
+          onPress={handleSubmit}
           disabled={loading}
           accessibilityRole="button"
-          accessibilityLabel="Log in"
+          accessibilityLabel={isSignup ? "Create account" : "Log in"}
         >
           {loading ? (
             <ActivityIndicator color={colors.accentText} />
           ) : (
-            <Text style={styles.buttonText}>Log in</Text>
+            <Text style={styles.buttonText}>{isSignup ? "Create account" : "Log in"}</Text>
           )}
+        </Pressable>
+
+        <Pressable
+          onPress={() => switchTo(isSignup ? "login" : "signup")}
+          style={styles.switchRow}
+          accessibilityRole="button"
+          accessibilityLabel={isSignup ? "Go to log in" : "Go to sign up"}
+          hitSlop={8}
+        >
+          <Text style={styles.switchText}>
+            {isSignup ? "Already have an account? " : "Don't have an account? "}
+            <Text style={styles.switchLink}>{isSignup ? "Log in" : "Sign up"}</Text>
+          </Text>
         </Pressable>
       </View>
     </KeyboardAvoidingView>
@@ -153,4 +203,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.accentText,
   },
+  switchRow: { alignItems: "center", paddingVertical: spacing.md },
+  switchText: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted },
+  switchLink: { fontFamily: fonts.bodyMedium, color: colors.primary },
 });

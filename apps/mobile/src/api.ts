@@ -183,6 +183,22 @@ export async function login(
   return body as LoginResponse;
 }
 
+/** Crea una cuenta y devuelve el token (queda logueado automáticamente). */
+export async function register(
+  input: { email: string; password: string; name?: string },
+): Promise<LoginResponse> {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const body = await parseJson(res);
+  if (!res.ok) {
+    throw new Error(errorMessage(body, "Couldn't create your account."));
+  }
+  return body as LoginResponse;
+}
+
 export async function getMe(token: string): Promise<AuthUser> {
   const res = await fetch(`${API_URL}/me`, {
     headers: { Authorization: `Bearer ${token}` },
