@@ -128,9 +128,9 @@ Eso crea la carpeta `apps/mobile/dist`. Subila a Vercel:
 
 ## Notas
 
-- **Usuarios**: en producción no hay cuenta demo. La app necesita una pantalla de
-  **registro** (hoy solo tiene login). El backend ya tiene el endpoint `POST /auth/register`;
-  falta la pantalla en la app (es un próximo paso rápido).
+- **Usuarios**: en producción no hay cuenta demo. La app ya tiene **pantalla de registro**
+  (login + "Sign up") conectada a `POST /auth/register`: cada quien se crea su cuenta y
+  queda logueado automáticamente. Nada más que hacer acá.
 - **Secretos**: nunca van al repo. Se cargan como *Variables* en Railway/Vercel.
 - **Costo**: los planes gratis alcanzan para probar y mostrar. Con tráfico real, estos
   servicios pasan a pago (son baratos para empezar).
