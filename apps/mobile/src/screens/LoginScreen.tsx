@@ -17,6 +17,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { login, register } from "../api";
 import { saveToken } from "../storage";
 import { colors, fonts, radius, spacing } from "../theme";
@@ -30,8 +31,9 @@ type Mode = "login" | "signup";
 export default function LoginScreen({ onLoggedIn }: Props) {
   const [mode, setMode] = useState<Mode>("login");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("demo@onit.app");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -41,8 +43,8 @@ export default function LoginScreen({ onLoggedIn }: Props) {
     setMode(next);
     setError(null);
     setPassword("");
-    // Al pasar a registro, limpiamos el email demo; al volver, lo reponemos.
-    setEmail(next === "signup" ? "" : "demo@onit.app");
+    setShowPassword(false);
+    setEmail("");
     setName("");
   }
 
@@ -107,16 +109,31 @@ export default function LoginScreen({ onLoggedIn }: Props) {
           keyboardType="email-address"
           accessibilityLabel="Email"
         />
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          placeholder={isSignup ? "Password (min. 8 characters)" : "Password"}
-          placeholderTextColor={colors.placeholder}
-          secureTextEntry
-          accessibilityLabel="Password"
-          onSubmitEditing={handleSubmit}
-        />
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={[styles.input, styles.passwordInput]}
+            value={password}
+            onChangeText={setPassword}
+            placeholder={isSignup ? "Password (min. 8 characters)" : "Password"}
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showPassword}
+            accessibilityLabel="Password"
+            onSubmitEditing={handleSubmit}
+          />
+          <Pressable
+            style={styles.eyeBtn}
+            onPress={() => setShowPassword((v) => !v)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+          >
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color={colors.textMuted}
+            />
+          </Pressable>
+        </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -183,6 +200,15 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 15,
     color: colors.text,
+  },
+  passwordRow: { position: "relative", justifyContent: "center" },
+  passwordInput: { paddingRight: 48 },
+  eyeBtn: {
+    position: "absolute",
+    right: spacing.md,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
   },
   error: {
     fontFamily: fonts.body,

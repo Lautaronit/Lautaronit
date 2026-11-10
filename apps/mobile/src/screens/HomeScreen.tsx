@@ -27,6 +27,7 @@ import { colors, fonts, formatMoney, radius, spacing } from "../theme";
 interface Props {
   token: string;
   onOpenMenu: () => void;
+  onOpenCredits: () => void;
 }
 
 interface Message {
@@ -36,7 +37,14 @@ interface Message {
   order?: CreateOrderResponse;
 }
 
-export default function HomeScreen({ token, onOpenMenu }: Props) {
+/** Ejemplos tappables para la home vacía: enseñan qué se puede pedir. */
+const STARTERS = [
+  "2 Big Mac combos",
+  "10 McNuggets and large fries",
+  "A Quarter Pounder combo",
+];
+
+export default function HomeScreen({ token, onOpenMenu, onOpenCredits }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -108,6 +116,21 @@ export default function HomeScreen({ token, onOpenMenu }: Props) {
             <Text style={styles.slogan}>
               Ask for anything.{"\n"}We're on it.
             </Text>
+            <View style={styles.starters}>
+              <Text style={styles.startersLabel}>Try asking</Text>
+              {STARTERS.map((s) => (
+                <Pressable
+                  key={s}
+                  style={({ pressed }) => [styles.starterChip, pressed && styles.starterChipPressed]}
+                  onPress={() => setInput(s)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Use example: ${s}`}
+                >
+                  <Ionicons name="sparkles-outline" size={14} color={colors.primary} />
+                  <Text style={styles.starterText}>{s}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         ) : (
           <ScrollView
@@ -122,7 +145,7 @@ export default function HomeScreen({ token, onOpenMenu }: Props) {
                   <Text style={styles.userText}>{m.text}</Text>
                 </View>
               ) : m.order ? (
-                <OrderCard key={m.id} order={m.order} />
+                <OrderCard key={m.id} order={m.order} onAddFunds={onOpenCredits} />
               ) : (
                 <View key={m.id} style={styles.botBubble}>
                   <Text style={styles.botText}>{m.text}</Text>
@@ -187,9 +210,10 @@ export default function HomeScreen({ token, onOpenMenu }: Props) {
   );
 }
 
-function OrderCard({ order }: { order: CreateOrderResponse }) {
+function OrderCard({ order, onAddFunds }: { order: CreateOrderResponse; onAddFunds: () => void }) {
   const { result } = order;
   const ok = result.status === "confirmed";
+  const needsFunds = !ok && (result.message?.toLowerCase().includes("balance") ?? false);
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -224,6 +248,17 @@ function OrderCard({ order }: { order: CreateOrderResponse }) {
       {!ok && result.message ? (
         <Text style={styles.cardError}>{result.message}</Text>
       ) : null}
+      {needsFunds ? (
+        <Pressable
+          style={({ pressed }) => [styles.addFundsBtn, pressed && styles.sendBtnPressed]}
+          onPress={onAddFunds}
+          accessibilityRole="button"
+          accessibilityLabel="Add funds"
+        >
+          <Ionicons name="wallet-outline" size={16} color={colors.accentText} />
+          <Text style={styles.addFundsText}>Add funds</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -247,6 +282,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 22,
   },
+  starters: { alignItems: "center", gap: spacing.sm, marginTop: spacing.sm },
+  startersLabel: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.placeholder,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    marginBottom: spacing.xs,
+  },
+  starterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  starterChipPressed: { opacity: 0.7 },
+  starterText: { fontFamily: fonts.body, fontSize: 13, color: colors.text },
 
   chat: { flex: 1 },
   chatContent: { padding: spacing.md, gap: spacing.sm },
@@ -302,6 +359,19 @@ const styles = StyleSheet.create({
   cardTotal: { fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.text },
   cardEta: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted, marginTop: 2 },
   cardError: { fontFamily: fonts.body, fontSize: 13, color: colors.danger, marginTop: 2 },
+  addFundsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+    backgroundColor: colors.accent,
+    borderRadius: radius.pill,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginTop: 8,
+  },
+  addFundsText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.accentText },
 
   inputWrap: { padding: spacing.md },
   usualChip: {

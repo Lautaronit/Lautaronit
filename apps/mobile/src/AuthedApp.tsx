@@ -81,5 +81,11 @@ export default function AuthedApp({ token, onLogout }: Props) {
     return <ScheduledOrdersScreen token={token} onBack={() => setScreen("settings")} />;
   }
 
-  return <HomeScreen token={token} onOpenMenu={() => setScreen("settings")} />;
+  return (
+    <HomeScreen
+      token={token}
+      onOpenMenu={() => setScreen("settings")}
+      onOpenCredits={() => setScreen("credits")}
+    />
+  );
 }
