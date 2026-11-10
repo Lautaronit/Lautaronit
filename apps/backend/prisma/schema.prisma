@@ -187,3 +187,17 @@ model WalletTransaction {
 
   @@index([userId, createdAt]) // "mis movimientos, más nuevos primero"
 }
+
+// -----------------------------------------------------------------------------
+// Lista de espera (pre-lanzamiento). Captura emails desde la landing pública
+// "Skip the Trip", antes de estar en la App Store. `source` guarda de dónde vino
+// la persona (tiktok, ig, etc.) para medir qué canal convierte.
+// -----------------------------------------------------------------------------
+model WaitlistSignup {
+  id        String   @id @default(cuid())
+  email     String   @unique // evita duplicados
+  source    String? // canal de origen para atribución (utm/source)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt]) // listar por orden de llegada (los "founding users")
+}

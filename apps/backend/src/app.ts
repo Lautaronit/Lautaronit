@@ -22,6 +22,7 @@ import { registerRoutes } from "./routes.js";
 import { registerAuthRoutes } from "./routes/auth.js";
 import { registerWalletRoutes } from "./routes/wallet.js";
 import { registerAccountRoutes } from "./routes/account.js";
+import { registerWaitlistRoutes } from "./routes/waitlist.js";
 import { registerAuth } from "./plugins/auth.js";
 import { env, hasAI } from "./config/env.js";
 
@@ -79,6 +80,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   registerRoutes(app, { registry, orderService, agent, basket });
   registerWalletRoutes(app, { wallet });
   registerAccountRoutes(app);
+  registerWaitlistRoutes(app); // lista de espera pública (pre-lanzamiento)
 
   // 4) Scheduler de recurrencias. Se construye siempre, pero solo "late" cuando
   //    se lo pide (el server real); en tests queda quieto.

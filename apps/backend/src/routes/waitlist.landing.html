@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>On It — Skip the trip</title>
+  <meta name="description" content="On It orders your groceries and food in one message. Skip the trip, keep the time. Join the waitlist." />
+  <meta property="og:title" content="On It — Skip the trip. Keep the time." />
+  <meta property="og:description" content="Order groceries & food in one message. Join the waitlist and get free credit at launch." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&family=Space+Grotesk:wght@400;500;600&display=swap" />
+  <style>
+    :root {
+      --bg: #F4F0E6;
+      --ink: #16150F;
+      --muted: #6E6756;
+      --green: #163A2B;
+      --orange: #E8552D;
+      --surface: #FFFFFF;
+      --border: #E2DCCB;
+      --display: "Fraunces", Georgia, "Times New Roman", serif;
+      --body: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--body);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding:
+        max(20px, env(safe-area-inset-top, 0px))
+        max(20px, env(safe-area-inset-right, 0px))
+        max(28px, env(safe-area-inset-bottom, 0px))
+        max(20px, env(safe-area-inset-left, 0px));
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+    .wrap { width: 100%; max-width: 540px; display: flex; flex-direction: column; }
+
+    .brand {
+      font-family: var(--display);
+      font-style: italic;
+      font-weight: 500;
+      color: var(--green);
+      font-size: 30px;
+      letter-spacing: 0.2px;
+      margin-top: 8px;
+    }
+
+    .hero { margin-top: 44px; }
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--orange);
+      font-weight: 600;
+      margin: 0 0 14px;
+    }
+    h1 {
+      font-family: var(--display);
+      font-style: italic;
+      font-weight: 500;
+      color: var(--green);
+      font-size: clamp(40px, 12vw, 58px);
+      line-height: 1.02;
+      letter-spacing: -0.5px;
+      margin: 0;
+      text-wrap: balance;
+    }
+    .lead {
+      font-size: 17px;
+      color: var(--ink);
+      margin: 20px 0 0;
+      max-width: 42ch;
+    }
+    .lead b { font-weight: 600; }
+
+    .pains { list-style: none; padding: 0; margin: 26px 0 0; display: flex; flex-direction: column; gap: 10px; }
+    .pains li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--muted); }
+    .pains .x {
+      flex: none; width: 22px; height: 22px; border-radius: 999px;
+      background: rgba(192,57,43,0.10); color: #C0392B;
+      display: grid; place-items: center; font-size: 13px; font-weight: 700; margin-top: 1px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+      margin-top: 34px;
+      box-shadow: 0 1px 0 rgba(22,21,15,0.02);
+    }
+    .card h2 {
+      font-family: var(--body);
+      font-weight: 600;
+      font-size: 17px;
+      margin: 0 0 4px;
+      color: var(--ink);
+    }
+    .card p.sub { margin: 0 0 16px; font-size: 14px; color: var(--muted); }
+
+    form { display: flex; flex-direction: column; gap: 10px; }
+    .row { display: flex; gap: 10px; }
+    input[type="email"] {
+      flex: 1; min-width: 0;
+      font-family: var(--body); font-size: 16px; color: var(--ink);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color .15s ease;
+    }
+    input[type="email"]:focus { border-color: var(--green); }
+    button {
+      font-family: var(--body); font-weight: 600; font-size: 15px;
+      color: #fff; background: var(--orange);
+      border: none; border-radius: 12px;
+      padding: 14px 22px;
+      cursor: pointer; white-space: nowrap;
+      transition: transform .05s ease, opacity .15s ease;
+    }
+    button:hover { opacity: .92; }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: .5; cursor: default; }
+    @media (max-width: 420px) { .row { flex-direction: column; } button { width: 100%; } }
+
+    .note { font-size: 13px; color: var(--muted); margin: 14px 0 0; display: flex; align-items: center; gap: 8px; }
+    .note .star { color: var(--orange); }
+    .msg { font-size: 14px; margin: 10px 0 0; min-height: 1px; }
+    .msg.err { color: #C0392B; }
+
+    .success { display: none; text-align: left; }
+    .success h2 { font-family: var(--display); font-style: italic; font-size: 26px; color: var(--green); margin: 0 0 6px; }
+    .success p { margin: 0; font-size: 15px; color: var(--muted); }
+    .success .pos { color: var(--ink); font-weight: 600; }
+    body.done .form-view { display: none; }
+    body.done .success { display: block; }
+
+    .foot { margin-top: 40px; font-size: 12px; color: var(--muted); }
+    .foot .dot { opacity: .5; }
+    .count { font-size: 13px; color: var(--muted); margin-top: 18px; min-height: 1px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">On It</div>
+
+    <section class="hero">
+      <p class="eyebrow">The grocery run, cancelled</p>
+      <h1>Skip the trip.<br />Keep the time.</h1>
+      <p class="lead">
+        The traffic. The tantrum in aisle 7. The bags. The gas. The hour you'll never get back.
+        <b>On It</b> gets your groceries and food — you just say what you need, and we're on it.
+      </p>
+
+      <ul class="pains">
+        <li><span class="x">✕</span> Driving to the store, kid in tow, circling for parking</li>
+        <li><span class="x">✕</span> Hauling bags home through traffic and rain</li>
+        <li><span class="x">✕</span> Gas, impulse buys, and an hour of your day — gone</li>
+      </ul>
+    </section>
+
+    <div class="card">
+      <div class="form-view">
+        <h2>Be first in line.</h2>
+        <p class="sub">Join the waitlist. Founding members get free credit at launch.</p>
+        <form id="form" novalidate>
+          <div class="row">
+            <input id="email" type="email" inputmode="email" autocomplete="email"
+                   placeholder="you@email.com" aria-label="Email address" required />
+            <button id="submit" type="submit">Join the waitlist</button>
+          </div>
+          <p class="note"><span class="star">★</span> No spam. One email when we launch. Unsubscribe anytime.</p>
+          <p class="msg" id="msg" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div class="success">
+        <h2>You're on the list. 🎉</h2>
+        <p id="successLine">We'll email you the moment On It goes live.</p>
+      </div>
+    </div>
+
+    <p class="count" id="count"></p>
+
+    <p class="foot">On It &nbsp;<span class="dot">·</span>&nbsp; Order by text. Groceries &amp; food, handled.</p>
+  </div>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var source = params.get("src") || params.get("utm_source") || "direct";
+
+      var form = document.getElementById("form");
+      var email = document.getElementById("email");
+      var submit = document.getElementById("submit");
+      var msg = document.getElementById("msg");
+      var countEl = document.getElementById("count");
+      var successLine = document.getElementById("successLine");
+
+      // Social proof: show the count only once it's meaningful.
+      fetch("/waitlist/count").then(function (r) { return r.json(); }).then(function (d) {
+        if (d && typeof d.count === "number" && d.count >= 25) {
+          countEl.textContent = "Join " + d.count.toLocaleString("en-US") + " people skipping the trip.";
+        }
+      }).catch(function () {});
+
+      function showError(text) { msg.textContent = text; msg.className = "msg err"; }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var value = (email.value || "").trim();
+        if (!value || value.indexOf("@") === -1 || value.indexOf(".") === -1) {
+          showError("Please enter a valid email.");
+          email.focus();
+          return;
+        }
+        submit.disabled = true;
+        msg.textContent = "";
+        msg.className = "msg";
+
+        fetch("/waitlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: value, source: source })
+        }).then(function (r) {
+          return r.json().then(function (data) { return { status: r.status, data: data }; });
+        }).then(function (res) {
+          if (res.status === 201 || res.status === 200) {
+            var pos = res.data && res.data.position;
+            if (res.data && res.data.already) {
+              successLine.innerHTML = "You're already on the list" + (pos ? " — <span class='pos'>#" + pos + "</span>" : "") + ". We'll email you at launch.";
+            } else {
+              successLine.innerHTML = pos
+                ? "You're <span class='pos'>#" + pos + "</span> on the list. We'll email you the moment On It goes live."
+                : "We'll email you the moment On It goes live.";
+            }
+            document.body.classList.add("done");
+          } else {
+            showError((res.data && res.data.error) || "Something went wrong. Try again.");
+            submit.disabled = false;
+          }
+        }).catch(function () {
+          showError("Network error. Please try again.");
+          submit.disabled = false;
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
