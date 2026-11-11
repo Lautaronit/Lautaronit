@@ -37,20 +37,21 @@ export const radius = { sm: 8, md: 12, lg: 20, pill: 999 };
  * marca) y muy sutiles, para que se sienta premium sin ensuciar.
  */
 export const shadow = {
-  // Para tarjetas y la caja de escritura: sombra apenas perceptible.
+  // Para tarjetas y la caja de escritura: sombra apenas perceptible, TINTADA de
+  // verde de marca (no gris — una sombra gris sin tintar lee como "barato").
   card: {
-    shadowColor: "#16150F",
+    shadowColor: "#163A2B",
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
     elevation: 2,
   },
   // Para elementos que "flotan" (botón de enviar, banners): algo más marcada.
   float: {
-    shadowColor: "#16150F",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
+    shadowColor: "#163A2B",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.16,
+    shadowRadius: 22,
     elevation: 6,
   },
 } as const;
