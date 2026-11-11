@@ -31,6 +31,30 @@ export const fonts = {
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
 export const radius = { sm: 8, md: 12, lg: 20, pill: 999 };
 
+/**
+ * Sombras suaves para dar profundidad. react-native-web traduce estas props a
+ * `box-shadow` en la web; en nativo usan `elevation`. Tono cálido (negro de
+ * marca) y muy sutiles, para que se sienta premium sin ensuciar.
+ */
+export const shadow = {
+  // Para tarjetas y la caja de escritura: sombra apenas perceptible.
+  card: {
+    shadowColor: "#16150F",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  // Para elementos que "flotan" (botón de enviar, banners): algo más marcada.
+  float: {
+    shadowColor: "#16150F",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+} as const;
+
 /** Formats cents (USD) into a dollar string, e.g. 999 -> "$9.99". */
 export function formatMoney(cents: number): string {
   return `$${(cents / 100).toLocaleString("en-US", {

@@ -1,12 +1,12 @@
 /**
  * AuthedApp.tsx
  * -----------------------------------------------------------------------------
- * Navegación simple para la parte logueada: Home ⇄ Settings ⇄ Credits.
- * Un router por estado, liviano, suficiente para este tramo (sin dependencias
- * de navegación extra).
+ * Navegación simple para la parte logueada: Home ⇄ Settings ⇄ cada sección.
+ * Un router por estado, liviano. Cada cambio de pantalla entra con una
+ * transición suave (fade + leve deslizamiento) para una sensación premium.
  */
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import HomeScreen from "./screens/HomeScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import CreditsScreen from "./screens/CreditsScreen";
@@ -16,6 +16,7 @@ import AddressesScreen from "./screens/AddressesScreen";
 import PaymentMethodsScreen from "./screens/PaymentMethodsScreen";
 import PreferencesScreen from "./screens/PreferencesScreen";
 import BasketScreen from "./screens/BasketScreen";
+import { FadeInUp } from "./components/Motion";
 
 type Screen =
   | "home"
@@ -36,8 +37,10 @@ interface Props {
 export default function AuthedApp({ token, onLogout }: Props) {
   const [screen, setScreen] = useState<Screen>("home");
 
+  let content: ReactNode;
+
   if (screen === "settings") {
-    return (
+    content = (
       <SettingsScreen
         token={token}
         onBack={() => setScreen("home")}
@@ -51,41 +54,34 @@ export default function AuthedApp({ token, onLogout }: Props) {
         onLogout={onLogout}
       />
     );
+  } else if (screen === "basket") {
+    content = <BasketScreen token={token} onBack={() => setScreen("settings")} />;
+  } else if (screen === "addresses") {
+    content = <AddressesScreen token={token} onBack={() => setScreen("settings")} />;
+  } else if (screen === "payments") {
+    content = <PaymentMethodsScreen token={token} onBack={() => setScreen("settings")} />;
+  } else if (screen === "preferences") {
+    content = <PreferencesScreen token={token} onBack={() => setScreen("settings")} />;
+  } else if (screen === "credits") {
+    content = <CreditsScreen token={token} onBack={() => setScreen("settings")} />;
+  } else if (screen === "history") {
+    content = <OrderHistoryScreen token={token} onBack={() => setScreen("settings")} />;
+  } else if (screen === "scheduled") {
+    content = <ScheduledOrdersScreen token={token} onBack={() => setScreen("settings")} />;
+  } else {
+    content = (
+      <HomeScreen
+        token={token}
+        onOpenMenu={() => setScreen("settings")}
+        onOpenCredits={() => setScreen("credits")}
+      />
+    );
   }
 
-  if (screen === "basket") {
-    return <BasketScreen token={token} onBack={() => setScreen("settings")} />;
-  }
-
-  if (screen === "addresses") {
-    return <AddressesScreen token={token} onBack={() => setScreen("settings")} />;
-  }
-
-  if (screen === "payments") {
-    return <PaymentMethodsScreen token={token} onBack={() => setScreen("settings")} />;
-  }
-
-  if (screen === "preferences") {
-    return <PreferencesScreen token={token} onBack={() => setScreen("settings")} />;
-  }
-
-  if (screen === "credits") {
-    return <CreditsScreen token={token} onBack={() => setScreen("settings")} />;
-  }
-
-  if (screen === "history") {
-    return <OrderHistoryScreen token={token} onBack={() => setScreen("settings")} />;
-  }
-
-  if (screen === "scheduled") {
-    return <ScheduledOrdersScreen token={token} onBack={() => setScreen("settings")} />;
-  }
-
+  // `key={screen}` remonta el contenido en cada cambio -> la transición se dispara.
   return (
-    <HomeScreen
-      token={token}
-      onOpenMenu={() => setScreen("settings")}
-      onOpenCredits={() => setScreen("credits")}
-    />
+    <FadeInUp key={screen} style={{ flex: 1 }} distance={10} duration={320}>
+      {content}
+    </FadeInUp>
   );
 }

@@ -22,7 +22,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { createOrder, getPreferences, type CreateOrderResponse } from "../api";
-import { colors, fonts, formatMoney, radius, spacing } from "../theme";
+import { colors, fonts, formatMoney, radius, shadow, spacing } from "../theme";
+import { FadeInUp, PressScale } from "../components/Motion";
 
 interface Props {
   token: string;
@@ -112,23 +113,30 @@ export default function HomeScreen({ token, onOpenMenu, onOpenCredits }: Props) 
       <View style={styles.body}>
         {empty ? (
           <View style={styles.hero}>
-            <Text style={styles.wordmark}>On It</Text>
-            <Text style={styles.slogan}>
-              Ask for anything.{"\n"}We're on it.
-            </Text>
+            <FadeInUp duration={560} distance={18}>
+              <Text style={styles.wordmark}>On It</Text>
+            </FadeInUp>
+            <FadeInUp delay={110} duration={560}>
+              <Text style={styles.slogan}>
+                Ask for anything.{"\n"}We're on it.
+              </Text>
+            </FadeInUp>
             <View style={styles.starters}>
-              <Text style={styles.startersLabel}>Try asking</Text>
-              {STARTERS.map((s) => (
-                <Pressable
-                  key={s}
-                  style={({ pressed }) => [styles.starterChip, pressed && styles.starterChipPressed]}
-                  onPress={() => setInput(s)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Use example: ${s}`}
-                >
-                  <Ionicons name="sparkles-outline" size={14} color={colors.primary} />
-                  <Text style={styles.starterText}>{s}</Text>
-                </Pressable>
+              <FadeInUp delay={230}>
+                <Text style={styles.startersLabel}>Try asking</Text>
+              </FadeInUp>
+              {STARTERS.map((s, i) => (
+                <FadeInUp key={s} delay={300 + i * 80}>
+                  <Pressable
+                    style={({ pressed }) => [styles.starterChip, pressed && styles.starterChipPressed]}
+                    onPress={() => setInput(s)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Use example: ${s}`}
+                  >
+                    <Ionicons name="sparkles-outline" size={14} color={colors.primary} />
+                    <Text style={styles.starterText}>{s}</Text>
+                  </Pressable>
+                </FadeInUp>
               ))}
             </View>
           </View>
@@ -139,19 +147,21 @@ export default function HomeScreen({ token, onOpenMenu, onOpenCredits }: Props) 
             contentContainerStyle={styles.chatContent}
             keyboardShouldPersistTaps="handled"
           >
-            {messages.map((m) =>
-              m.role === "user" ? (
-                <View key={m.id} style={styles.userBubble}>
-                  <Text style={styles.userText}>{m.text}</Text>
-                </View>
-              ) : m.order ? (
-                <OrderCard key={m.id} order={m.order} onAddFunds={onOpenCredits} />
-              ) : (
-                <View key={m.id} style={styles.botBubble}>
-                  <Text style={styles.botText}>{m.text}</Text>
-                </View>
-              ),
-            )}
+            {messages.map((m) => (
+              <FadeInUp key={m.id} distance={10} duration={380}>
+                {m.role === "user" ? (
+                  <View style={styles.userBubble}>
+                    <Text style={styles.userText}>{m.text}</Text>
+                  </View>
+                ) : m.order ? (
+                  <OrderCard order={m.order} onAddFunds={onOpenCredits} />
+                ) : (
+                  <View style={styles.botBubble}>
+                    <Text style={styles.botText}>{m.text}</Text>
+                  </View>
+                )}
+              </FadeInUp>
+            ))}
             {sending ? (
               <View style={styles.botBubble}>
                 <ActivityIndicator color={colors.primary} />
@@ -190,11 +200,10 @@ export default function HomeScreen({ token, onOpenMenu, onOpenCredits }: Props) 
             accessibilityLabel="Write your order"
           />
           <View style={styles.inputActions}>
-            <Pressable
-              style={({ pressed }) => [
+            <PressScale
+              style={[
                 styles.sendBtn,
                 (sending || !input.trim()) && styles.sendBtnDisabled,
-                pressed && styles.sendBtnPressed,
               ]}
               onPress={send}
               disabled={sending || !input.trim()}
@@ -202,7 +211,7 @@ export default function HomeScreen({ token, onOpenMenu, onOpenCredits }: Props) 
               accessibilityLabel="Send order"
             >
               <Ionicons name="arrow-up" size={22} color={colors.accentText} />
-            </Pressable>
+            </PressScale>
           </View>
         </View>
       </View>
@@ -339,6 +348,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     maxWidth: "90%",
     gap: 6,
+    ...shadow.card,
   },
   cardHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
   cardStatus: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.text },
@@ -399,6 +409,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     minHeight: 84,
     justifyContent: "space-between",
+    ...shadow.card,
   },
   input: {
     fontFamily: fonts.body,
@@ -415,6 +426,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
+    ...shadow.float,
   },
   sendBtnDisabled: { opacity: 0.4 },
   sendBtnPressed: { opacity: 0.85 },
