@@ -22,7 +22,7 @@ import {
   type MerchantInfo,
   type OrderRow,
 } from "../api";
-import { colors, fonts, formatDate, formatMoney, radius, spacing } from "../theme";
+import { colors, fonts, formatDate, formatMoney, radius, shadow, spacing } from "../theme";
 
 interface Props {
   token: string;
@@ -230,6 +230,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginTop: spacing.sm,
     gap: 4,
+    ...shadow.card,
   },
   cardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   merchant: { fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.text, flex: 1 },

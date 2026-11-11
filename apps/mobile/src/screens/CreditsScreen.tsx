@@ -31,7 +31,7 @@ import {
   type PaymentMethod,
   type WalletTransaction,
 } from "../api";
-import { colors, fonts, formatDate, formatMoney, radius, spacing } from "../theme";
+import { colors, fonts, formatDate, formatMoney, radius, shadow, spacing } from "../theme";
 
 interface Props {
   token: string;
@@ -398,6 +398,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.md,
     minHeight: 96,
+    ...shadow.float,
   },
   balanceLabel: { fontFamily: fonts.body, fontSize: 12, color: "#B8C6BC", letterSpacing: 0.5 },
   balanceAmount: { fontFamily: fonts.wordmark, fontSize: 42, color: colors.bg, marginTop: 4 },
@@ -478,6 +479,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
+    ...shadow.card,
   },
   cardLabel: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.text },
   cardExp: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted, marginTop: 2 },
@@ -526,6 +528,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginTop: spacing.sm,
     gap: spacing.sm,
+    ...shadow.card,
   },
   input: {
     fontFamily: fonts.body,

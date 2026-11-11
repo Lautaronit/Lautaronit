@@ -20,7 +20,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { instacartLink, orderBasket, planBasket, type BasketPlan } from "../api";
-import { colors, fonts, formatMoney, radius, spacing } from "../theme";
+import { colors, fonts, formatMoney, radius, shadow, spacing } from "../theme";
 
 interface Props {
   token: string;
@@ -349,6 +349,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.md,
     marginTop: spacing.lg,
+    ...shadow.card,
   },
   resultMerchant: { fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.text, marginBottom: spacing.sm },
   line: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 4 },

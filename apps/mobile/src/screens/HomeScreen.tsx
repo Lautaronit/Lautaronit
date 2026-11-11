@@ -21,6 +21,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { createOrder, getPreferences, type CreateOrderResponse } from "../api";
 import { colors, fonts, formatMoney, radius, shadow, spacing } from "../theme";
 import { FadeInUp, PressScale } from "../components/Motion";
@@ -99,6 +100,11 @@ export default function HomeScreen({ token, onOpenMenu, onOpenCredits }: Props) 
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <LinearGradient
+        colors={["#F8F4EB", "#F4F0E6", "#EFE8D8"]}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
       <View style={styles.header}>
         <Pressable
           onPress={onOpenMenu}
@@ -113,6 +119,13 @@ export default function HomeScreen({ token, onOpenMenu, onOpenCredits }: Props) 
       <View style={styles.body}>
         {empty ? (
           <View style={styles.hero}>
+            <LinearGradient
+              colors={["rgba(232,85,45,0.18)", "rgba(22,58,43,0.06)", "rgba(232,85,45,0)"]}
+              start={{ x: 0.2, y: 0.1 }}
+              end={{ x: 0.9, y: 1 }}
+              style={styles.heroGlow}
+              pointerEvents="none"
+            />
             <FadeInUp duration={560} distance={18}>
               <Text style={styles.wordmark}>On It</Text>
             </FadeInUp>
@@ -210,7 +223,14 @@ export default function HomeScreen({ token, onOpenMenu, onOpenCredits }: Props) 
               accessibilityRole="button"
               accessibilityLabel="Send order"
             >
-              <Ionicons name="arrow-up" size={22} color={colors.accentText} />
+              <LinearGradient
+                colors={["#F06A3F", "#E8552D", "#D8431C"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.sendGradient}
+              >
+                <Ionicons name="arrow-up" size={22} color={colors.accentText} />
+              </LinearGradient>
             </PressScale>
           </View>
         </View>
@@ -283,6 +303,15 @@ const styles = StyleSheet.create({
   body: { flex: 1 },
 
   hero: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.md },
+  heroGlow: {
+    position: "absolute",
+    width: 340,
+    height: 340,
+    borderRadius: 170,
+    top: "30%",
+    left: "50%",
+    marginLeft: -170,
+  },
   wordmark: { fontFamily: fonts.wordmark, fontSize: 60, color: colors.primary },
   slogan: {
     fontFamily: fonts.body,
@@ -423,10 +452,14 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: colors.accent,
+    overflow: "hidden",
+    ...shadow.float,
+  },
+  sendGradient: {
+    width: 42,
+    height: 42,
     alignItems: "center",
     justifyContent: "center",
-    ...shadow.float,
   },
   sendBtnDisabled: { opacity: 0.4 },
   sendBtnPressed: { opacity: 0.85 },
