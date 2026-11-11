@@ -1,12 +1,10 @@
 /**
  * SettingsScreen.tsx
  * -----------------------------------------------------------------------------
- * The settings / account area, opened from the ☰ menu. Shows the account and
- * the sections (addresses, payment methods, credits, scheduled orders, order
- * history, preferences) plus log out.
- *
- * For this slice, only Credits navigates and Log out works; the other sections
- * are placeholders we'll build next.
+ * El área de cuenta / ajustes, abierta desde el menú ☰. Muestra la cuenta y las
+ * secciones (direcciones, pagos, créditos, programados, historial, preferencias)
+ * más cerrar sesión. Trato premium: tarjeta agrupada con profundidad, avatar con
+ * gradiente, entrada escalonada y feedback de escala al tocar.
  */
 
 import { useEffect, useState } from "react";
@@ -19,8 +17,10 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { getMe, getWallet, type AuthUser } from "../api";
-import { colors, fonts, formatMoney, radius, spacing } from "../theme";
+import { colors, fonts, formatMoney, radius, shadow, spacing } from "../theme";
+import { FadeInUp, PressScale } from "../components/Motion";
 
 interface Props {
   token: string;
@@ -63,6 +63,21 @@ export default function SettingsScreen({
 
   const initial = (user?.name?.[0] ?? user?.email?.[0] ?? "?").toUpperCase();
 
+  const items: RowItem[] = [
+    { icon: "map-outline", label: "Addresses", onPress: onOpenAddresses },
+    { icon: "card-outline", label: "Payment methods", onPress: onOpenPayments },
+    {
+      icon: "wallet-outline",
+      label: "Credits",
+      value: balanceCents !== null ? formatMoney(balanceCents) : undefined,
+      onPress: onOpenCredits,
+    },
+    { icon: "nutrition-outline", label: "Macro basket", onPress: onOpenBasket },
+    { icon: "calendar-outline", label: "Scheduled orders", onPress: onOpenScheduled },
+    { icon: "receipt-outline", label: "Order history", onPress: onOpenHistory },
+    { icon: "options-outline", label: "Preferences", onPress: onOpenPreferences },
+  ];
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -73,74 +88,75 @@ export default function SettingsScreen({
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.profile}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initial}</Text>
+        <FadeInUp>
+          <View style={styles.profile}>
+            <LinearGradient
+              colors={["#215842", "#163A2B"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.avatar}
+            >
+              <Text style={styles.avatarText}>{initial}</Text>
+            </LinearGradient>
+            <View style={{ flex: 1 }}>
+              {loading ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : (
+                <>
+                  <Text style={styles.profileName}>{user?.name ?? "Your account"}</Text>
+                  <Text style={styles.profileEmail}>{user?.email ?? ""}</Text>
+                </>
+              )}
+            </View>
           </View>
-          <View style={{ flex: 1 }}>
-            {loading ? (
-              <ActivityIndicator color={colors.primary} />
-            ) : (
-              <>
-                <Text style={styles.profileName}>{user?.name ?? "Your account"}</Text>
-                <Text style={styles.profileEmail}>{user?.email ?? ""}</Text>
-              </>
-            )}
+        </FadeInUp>
+
+        <FadeInUp delay={90}>
+          <View style={styles.menuCard}>
+            {items.map((it, i) => (
+              <Row key={it.label} {...it} isLast={i === items.length - 1} />
+            ))}
           </View>
-        </View>
+        </FadeInUp>
 
-        <Row icon="map-outline" label="Addresses" onPress={onOpenAddresses} />
-        <Row icon="card-outline" label="Payment methods" onPress={onOpenPayments} />
-        <Row
-          icon="wallet-outline"
-          label="Credits"
-          value={balanceCents !== null ? formatMoney(balanceCents) : undefined}
-          onPress={onOpenCredits}
-        />
-        <Row icon="nutrition-outline" label="Macro basket" onPress={onOpenBasket} />
-        <Row icon="calendar-outline" label="Scheduled orders" onPress={onOpenScheduled} />
-        <Row icon="receipt-outline" label="Order history" onPress={onOpenHistory} />
-        <Row icon="options-outline" label="Preferences" onPress={onOpenPreferences} />
-
-        <View style={styles.divider} />
-
-        <Pressable
-          onPress={onLogout}
-          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-          accessibilityRole="button"
-          accessibilityLabel="Log out"
-        >
-          <Ionicons name="log-out-outline" size={22} color={colors.danger} style={styles.rowIcon} />
-          <Text style={[styles.rowLabel, { color: colors.danger }]}>Log out</Text>
-        </Pressable>
+        <FadeInUp delay={180}>
+          <PressScale
+            onPress={onLogout}
+            style={styles.logoutRow}
+            scaleTo={0.98}
+            accessibilityRole="button"
+            accessibilityLabel="Log out"
+          >
+            <Ionicons name="log-out-outline" size={22} color={colors.danger} style={styles.rowIcon} />
+            <Text style={[styles.rowLabel, { color: colors.danger }]}>Log out</Text>
+          </PressScale>
+        </FadeInUp>
       </ScrollView>
     </View>
   );
 }
 
-function Row({
-  icon,
-  label,
-  value,
-  onPress,
-}: {
+interface RowItem {
   icon: any;
   label: string;
   value?: string;
   onPress?: () => void;
-}) {
+}
+
+function Row({ icon, label, value, onPress, isLast }: RowItem & { isLast?: boolean }) {
   return (
-    <Pressable
+    <PressScale
       onPress={onPress}
       disabled={!onPress}
-      style={({ pressed }) => [styles.row, pressed && onPress && styles.rowPressed]}
+      style={[styles.row, isLast && styles.rowLast]}
+      scaleTo={0.98}
       accessibilityRole={onPress ? "button" : undefined}
     >
       <Ionicons name={icon} size={22} color={colors.primary} style={styles.rowIcon} />
       <Text style={styles.rowLabel}>{label}</Text>
       {value ? <Text style={styles.rowValue}>{value}</Text> : null}
       <Ionicons name="chevron-forward" size={18} color={colors.placeholder} />
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -166,26 +182,42 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.primary,
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
+    ...shadow.card,
   },
   avatarText: { fontFamily: fonts.bodyMedium, fontSize: 18, color: colors.bg },
   profileName: { fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.text },
   profileEmail: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted },
 
+  menuCard: {
+    backgroundColor: colors.surfaceRaised,
+    borderRadius: radius.lg,
+    overflow: "hidden",
+    marginTop: spacing.sm,
+    ...shadow.card,
+  },
   row: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 15,
+    paddingHorizontal: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     gap: spacing.md,
   },
-  rowPressed: { opacity: 0.6 },
+  rowLast: { borderBottomWidth: 0 },
   rowIcon: { width: 24, textAlign: "center" },
   rowLabel: { flex: 1, fontFamily: fonts.body, fontSize: 15, color: colors.text },
   rowValue: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.primary },
 
-  divider: { height: spacing.lg },
+  logoutRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
+    paddingHorizontal: spacing.md,
+    gap: spacing.md,
+    marginTop: spacing.lg,
+  },
 });

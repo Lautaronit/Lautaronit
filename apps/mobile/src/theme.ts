@@ -10,6 +10,8 @@
 export const colors = {
   bg: "#F4F0E6", // crema
   surface: "#FFFFFF",
+  surfaceRaised: "#FBF8F1", // crema casi blanco: tarjetas que "suben" sobre el fondo
+  surfaceSunken: "#ECE6D8", // zonas hundidas / inputs
   primary: "#163A2B", // verde oscuro (marca)
   text: "#16150F", // negro cálido
   textMuted: "#6E6756",
